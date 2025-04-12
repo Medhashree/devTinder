@@ -1,9 +1,11 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 const connectDB = require("./config/database");
 const User = require("./model/user");
+const validateSignUpData = require("./utils/validation");
 
 app.use(express.json()); // this middleware(runs for all URLs), provided by express to read and convert JSON
 
@@ -18,10 +20,22 @@ app.post("/signup", async (req, res) => {
   //   gender: "Female",
   // });
 
-  const user = new User(req.body); // req.body returns a JSON, wich is converted to JS obj
-
   //handle your logic within try...catch
   try {
+    //validate our req.body
+    validateSignUpData(req.body);
+
+    //Encrypt password
+    const { firstName, lastName, emailId, password } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10); // 10 is the number of saltOperations/encryption
+
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash
+    }); // req.body returns a JSON, wich is converted to JS obj
+
     // most of the mongoose methods returns a promise
     await user.save(); // this will save the instance of the model/collection in db
 
@@ -30,6 +44,29 @@ app.post("/signup", async (req, res) => {
     res.status(400).send("Failed to add new user: " + err.message);
   }
 });
+
+//Adding login API
+app.post('/login', async (req, res) => {
+  try{
+
+    const {emailId, password} = req.body;
+
+    const user = await User.findOne({emailId: emailId});
+    if(!user){
+      throw new Error('Invalid credentials');
+    }
+
+    const isPassword = await bcrypt.compare(password, user.password);
+    if(isPassword){
+      res.send('Login Successfull!');
+    }else{
+      throw new Error('Invalid credentials');
+    }
+
+  }catch(err){
+    res.status(400).send(err.message);
+  }
+})
 
 //Get user by emailId
 app.get("/users", async (req, res) => {
@@ -100,7 +137,7 @@ app.patch("/userUpdate/:userId", async (req, res) => {
       throw new Error("Updating certain fields are restricted.");
     }
 
-    await User.findByIdAndUpdate(userId , data, { runValidators: true });
+    await User.findByIdAndUpdate(userId, data, { runValidators: true });
     res.send("User updated successfully");
   } catch (err) {
     res.status(400).send("Update Failed: " + err.message);

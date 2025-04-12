@@ -5,11 +5,10 @@ const app = express();
 const connectDB = require("./config/database");
 const User = require("./model/user");
 
-app.use(express.json()); // this middleware(runs for all URLs), provided by express to ready and convert JSON
+app.use(express.json()); // this middleware(runs for all URLs), provided by express to read and convert JSON
 
 //Adding user after sign-up
 app.post("/signup", async (req, res) => {
-
   // const user = new User({
   //   firstName: "Medhashree",
   //   lastName: "Moshat",
@@ -19,7 +18,7 @@ app.post("/signup", async (req, res) => {
   //   gender: "Female",
   // });
 
-  const user = new User(req.body); // req.body returns a JSON, wich is converted to JS obj 
+  const user = new User(req.body); // req.body returns a JSON, wich is converted to JS obj
 
   //handle your logic within try...catch
   try {
@@ -28,62 +27,94 @@ app.post("/signup", async (req, res) => {
 
     res.send("User Added Successfully");
   } catch (err) {
-    res.status(400).send("Failed to add new user", err.message);
+    res.status(400).send("Failed to add new user: " + err.message);
   }
 });
 
 //Get user by emailId
-app.get('/users', async (req, res) => {
+app.get("/users", async (req, res) => {
   try {
     const userEmail = req.body.emailId;
     const users = await User.find({ emailId: userEmail });
 
     if (users.length === 0) {
-      res.status(400).send('User not found');
+      res.status(400).send("User not found");
     } else {
       res.send(users);
     }
-  } catch {
-    res.status(400).send('something went wrong');
+  } catch (err) {
+    res.status(400).send("something went wrong");
   }
 });
 
 //Feed - get all the users
-app.get('/feed', async (req, res) => {
+app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({}); // passing empty object to find all the users
 
     if (!users) {
-      res.status(400).send('User not found');
+      res.status(400).send("User not found");
     } else {
       res.send(users);
     }
-  } catch {
-    res.status(400).send('something went wrong');
+  } catch (err) {
+    res.status(400).send("something went wrong");
   }
 });
 
-//Update user by emailId
-app.patch('/updateUser', async (req, res) => {
+// Update user by emailId
+app.patch("/updateUser", async (req, res) => {
   try {
     const userEmail = req.body.emailId;
     const data = req.body;
 
-    await User.findOneAndUpdate({ emailId: userEmail }, data);
-    res.send('User updated successfully')
-  } catch {
-    res.status(400).send('something went wrong');
+    await User.findOneAndUpdate({ emailId: userEmail }, data, {
+      runValidators: true,
+    });
+    res.send("User updated successfully");
+  } catch (err) {
+    res.status(400).send("Update Failed: " + err.message);
+  }
+});
+
+//update user by userId
+app.patch("/userUpdate/:userId", async (req, res) => {
+  try {
+    const ALLOW_UPDATES = [
+      "lastname",
+      "password",
+      "age",
+      "gender",
+      "about",
+      "profilePic",
+      "skills",
+    ];
+    const userId = req.params?.userId;
+    const data = req.body;
+
+    //API Validation
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOW_UPDATES.includes(k)
+    );
+    if (!isUpdateAllowed) {
+      throw new Error("Updating certain fields are restricted.");
+    }
+
+    await User.findByIdAndUpdate(userId , data, { runValidators: true });
+    res.send("User updated successfully");
+  } catch (err) {
+    res.status(400).send("Update Failed: " + err.message);
   }
 });
 
 //delete user by id
-app.delete('/deleteUser', async (req, res) => {
-  try{
+app.delete("/deleteUser", async (req, res) => {
+  try {
     const userId = req.body.userId;
     await User.findByIdAndDelete(userId); // also can be written as findByIdAndDelete({_id: userId})
-    res.send('User deleted successfully')
+    res.send("User deleted successfully");
   } catch {
-    res.status(400).send('something went wrong');
+    res.status(400).send("something went wrong");
   }
 });
 

@@ -7,7 +7,12 @@ const connectDB = require("./config/database");
 const User = require("./model/user");
 const validateSignUpData = require("./utils/validation");
 
+const jwt = require("jsonwebtoken");
+const cookies = require("cookie-parser");
+const {userAuth} = require("./middlewares/auth");
+
 app.use(express.json()); // this middleware(runs for all URLs), provided by express to read and convert JSON
+app.use(cookies());
 
 //Adding user after sign-up
 app.post("/signup", async (req, res) => {
@@ -56,8 +61,15 @@ app.post('/login', async (req, res) => {
       throw new Error('Invalid credentials');
     }
 
-    const isPassword = await bcrypt.compare(password, user.password);
-    if(isPassword){
+    const isPasswordValid = await user.validatePassword(password);
+    if(isPasswordValid){
+
+      //Create JWT
+      const token = await user.getJWT();
+
+      //Add the token to cookie and send the response back to the user
+      res.cookie("token", token);
+
       res.send('Login Successfull!');
     }else{
       throw new Error('Invalid credentials');
@@ -65,6 +77,17 @@ app.post('/login', async (req, res) => {
 
   }catch(err){
     res.status(400).send(err.message);
+  }
+})
+
+app.get('/profile', userAuth, async (req, res) => {
+  try{
+    const user  = req.user; //user passed from userAuth
+
+    res.send(user);
+
+  }catch(err){
+    res.status(400).send("ERROR: " + err.message);
   }
 })
 

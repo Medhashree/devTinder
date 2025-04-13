@@ -5,6 +5,7 @@ const cookies = require("cookie-parser");
 const authRouter = require("./router/authRouter");
 const profileRouter = require("./router/profileRouter");
 const connectionRequestRouter = require("./router/connectionRequestRouter");
+const userRouter = require("./router/userRouter");
 
 app.use(express.json()); // this middleware(runs for all URLs), provided by express to read and convert JSON
 app.use(cookies());
@@ -12,6 +13,7 @@ app.use(cookies());
 app.use("/", authRouter);
 app.use('/', profileRouter);
 app.use('/', connectionRequestRouter);
+app.use('/', userRouter);
 
 
 connectDB()

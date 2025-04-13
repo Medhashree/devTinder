@@ -157,6 +157,8 @@ SCHEMA , APIs AND VALIDATION
 //user.js
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
@@ -229,18 +231,45 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+userSchema.methods.getJWT = async function () { // never use a arrow function here as we will be using this, and arrow function behaves differenly
+  const user = this; // user is actually the instamce of userSchema, so we are accessing with 'this'
+
+  const token = await jwt.sign({_id: user._id}, "DEV@Tinder$1706", {expiresIn: "1h"}); // user data, secret msg, expirationTime
+
+  return token;
+};
+
+userSchema.methods.validatePassword = async function (passwordInputByUser){
+  const user = this;
+
+  const passwordHash = user.password;
+
+  const isPasswordValid = await bcrypt.compare(passwordInputByUser, passwordHash);
+
+  return isPasswordValid;
+
+}
+
 module.exports = mongoose.model("User", userSchema);
+
 
 
 //app.js
 const express = require("express");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 const connectDB = require("./config/database");
 const User = require("./model/user");
+const validateSignUpData = require("./utils/validation");
+
+const jwt = require("jsonwebtoken");
+const cookies = require("cookie-parser");
+const {userAuth} = require("./middlewares/auth");
 
 app.use(express.json()); // this middleware(runs for all URLs), provided by express to read and convert JSON
+app.use(cookies());
 
 //Adding user after sign-up
 app.post("/signup", async (req, res) => {
@@ -253,10 +282,22 @@ app.post("/signup", async (req, res) => {
   //   gender: "Female",
   // });
 
-  const user = new User(req.body); // req.body returns a JSON, wich is converted to JS obj
-
   //handle your logic within try...catch
   try {
+    //validate our req.body
+    validateSignUpData(req.body);
+
+    //Encrypt password
+    const { firstName, lastName, emailId, password } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10); // 10 is the number of saltOperations/encryption
+
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash
+    }); // req.body returns a JSON, wich is converted to JS obj
+
     // most of the mongoose methods returns a promise
     await user.save(); // this will save the instance of the model/collection in db
 
@@ -265,6 +306,47 @@ app.post("/signup", async (req, res) => {
     res.status(400).send("Failed to add new user: " + err.message);
   }
 });
+
+//Adding login API
+app.post('/login', async (req, res) => {
+  try{
+
+    const {emailId, password} = req.body;
+
+    const user = await User.findOne({emailId: emailId});
+    if(!user){
+      throw new Error('Invalid credentials');
+    }
+
+    const isPasswordValid = await user.validatePassword(password);
+    if(isPasswordValid){
+
+      //Create JWT
+      const token = await user.getJWT();
+
+      //Add the token to cookie and send the response back to the user
+      res.cookie("token", token);
+
+      res.send('Login Successfull!');
+    }else{
+      throw new Error('Invalid credentials');
+    }
+
+  }catch(err){
+    res.status(400).send(err.message);
+  }
+})
+
+app.get('/profile', userAuth, async (req, res) => {
+  try{
+    const user  = req.user; //user passed from userAuth
+
+    res.send(user);
+
+  }catch(err){
+    res.status(400).send("ERROR: " + err.message);
+  }
+})
 
 //Get user by emailId
 app.get("/users", async (req, res) => {
@@ -335,7 +417,7 @@ app.patch("/userUpdate/:userId", async (req, res) => {
       throw new Error("Updating certain fields are restricted.");
     }
 
-    await User.findByIdAndUpdate(userId , data, { runValidators: true });
+    await User.findByIdAndUpdate(userId, data, { runValidators: true });
     res.send("User updated successfully");
   } catch (err) {
     res.status(400).send("Update Failed: " + err.message);
@@ -364,6 +446,3 @@ connectDB()
   .catch((err) => {
     console.error("Database not connected", err);
   });
-
-
-

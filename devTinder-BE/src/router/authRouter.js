@@ -21,7 +21,7 @@ authRouter.post("/signup", async (req, res) => {
     validateSignUpData(req.body);
 
     //Encrypt password
-    const { firstName, lastName, emailId, password } = req.body;
+    const { firstName, lastName, emailId, password, age, gender, about, profilePic, skills } = req.body;
     const passwordHash = await bcrypt.hash(password, 10); // 10 is the number of saltOperations/encryption
 
     const user = new User({
@@ -29,6 +29,11 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       emailId,
       password: passwordHash,
+      age,
+      gender,
+      about,
+      profilePic,
+      skills
     }); // req.body returns a JSON, wich is converted to JS obj
 
     // most of the mongoose methods returns a promise

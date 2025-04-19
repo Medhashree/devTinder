@@ -1,18 +1,47 @@
 import devTinderIcon from "../assets/devtinder-icon.png";
 import devTinderLogo from "../assets/devtinder-logo.png";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import axios from "axios";
+import { BASE_URL } from "../utils/constants";
+import { removeUsers } from "../utils/userSlice";
+import { Link } from "react-router-dom";
+import { removeFeed } from "../utils/feedSlice";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const user = useSelector((store) => store.user);
+  const dispatch = useDispatch();
+
+  const handleLogout = async () => {
+    try{
+      const res = await axios.post(BASE_URL + '/logout', {}, {withCredentials: true});
+      navigate("/login");
+      // dispatch(removeUsers());  //This triggers a re-render or unmounting of the current component.
+      // Before navigate("/login") has a chance to execute, the component is gone, so navigation is lost.
+      // This is why navigate("/login") works when placed before dispatch.
+
+      //But again is navigate is placed before
+      // When you call navigate("/login"), the router immediately rerenders the app based on the new route. 
+      // If your /login route doesn’t depend on the current component being fully unmounted, or if the store is reset elsewhere (like on app load), 
+      // it might skip processing the next line if the component gets destroyed before dispatch(removeUsers()) completes.
+      
+      setTimeout(() => {
+        dispatch(removeUsers()); // slightly delayed so it runs even if component unmounts
+        dispatch(removeFeed());
+      }, 0);
+
+    }catch(err){
+      console.error(err);
+    }
+  }
 
   return (
     <div className="navbar bg-base-300 shadow-sm">
       <div className="flex-1">
         <a className="btn btn-ghost text-xl">
-          <img src={devTinderIcon} alt="DevTinder Icon" className="h-12" />
-          <img src={devTinderLogo} alt="DevTinder Logo" className="h-10" />
+          <img src={devTinderIcon} alt="DevTinder Icon" className="h-12" onClick={() => navigate("/feed")} />
+          <img src={devTinderLogo} alt="DevTinder Logo" className="h-10" onClick={() => navigate("/feed")} />
         </a>
       </div>
       {!user && <div>
@@ -44,16 +73,16 @@ const Navbar = () => {
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
             >
               <li>
-                <a className="justify-between">
+                <Link to='/profile' className="justify-between">
                   Profile
                   <span className="badge">New</span>
-                </a>
+                </Link>
               </li>
               <li>
                 <a>Settings</a>
               </li>
               <li>
-                <a>Logout</a>
+                <a onClick={handleLogout}>Logout</a>
               </li>
             </ul>
           </div>

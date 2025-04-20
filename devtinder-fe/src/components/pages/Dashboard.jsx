@@ -26,7 +26,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="mt-20">
+    <div className="mt-25">
       {feed.length > 0 && <div className="flex justify-center">
         <UserCard userData = {feed[0]} />
       </div>}

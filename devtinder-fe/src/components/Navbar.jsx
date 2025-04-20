@@ -78,6 +78,11 @@ const Navbar = () => {
                 </Link>
               </li>
               <li>
+                <Link to='/connections' className="justify-between">
+                  My Connections
+                </Link>
+              </li>
+              <li>
                 <Link to='/settings'>Settings</Link>
               </li>
               <li>

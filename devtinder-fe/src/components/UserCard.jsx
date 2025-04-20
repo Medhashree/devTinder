@@ -46,7 +46,7 @@ const UserCard = ({ userData }) => {
 
           {(age || gender) && (
             <p className="text-md text-teal-200">
-              {age && <span>{age}-years-old </span>}
+              {age && <span>{age}years </span>}
               {gender && <span className="ml-2">{gender}</span>}
             </p>
           )}

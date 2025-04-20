@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import LoginGuard from "./LogInGuard";
 import Settings from "./pages/Settings";
+import Connections from "./pages/Connections";
 
 function RouterLayout() {
   const location = useLocation();
@@ -46,6 +47,14 @@ function RouterLayout() {
             element={
               <LoginGuard>
                 <Settings />
+              </LoginGuard>
+            }
+          />
+          <Route
+            path="connections"
+            element={
+              <LoginGuard>
+                <Connections />
               </LoginGuard>
             }
           />

@@ -2,25 +2,15 @@ import { X, Check } from "lucide-react";
 import { BASE_URL } from "../utils/constants";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-const dummyRequests = [
-  {
-    id: 1,
-    name: "Sneha Dey",
-    about: "Loves tech, coffee, and music.",
-    image:
-      "https://thumbs.dreamstime.com/b/unisex-default-profile-picture-white-faceless-person-black-background-304887214.jpg", // Replace with actual image
-  },
-  {
-    id: 2,
-    name: "Rohit Sharma",
-    about: "Frontend developer with React skills.",
-    image: "https://via.placeholder.com/40",
-  },
-];
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addConnections } from "../utils/connectionSlice";
 
 const ConnectionSidebar = () => {
   const [requestsReceived, setRequestsReceived] = useState([]);
+  const [alwaysReload, setAlwaysReload] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const getRequests = async () => {
     try {
@@ -35,12 +25,44 @@ const ConnectionSidebar = () => {
 
   useEffect(() => {
     getRequests();
-  }, []);
+  }, [alwaysReload]);
+
+  const handleAccept = async (e, id) => {
+    e.stopPropagation();
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/request/review/accepted/${id}`,
+        {},
+        { withCredentials: true }
+      );
+      dispatch(addConnections([res?.data?.data]));
+      setAlwaysReload(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleReject = async (e, id) => {
+    e.stopPropagation();
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/request/review/rejected/${id}`,
+        {},
+        { withCredentials: true }
+      );
+      setAlwaysReload(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="w-80 h-screen fixed left-0 top-0 bg-base-200 shadow-md overflow-y-auto px-4 pt-20 pb-20">
       {requestsReceived.length > 0 ? (
-        <h2 className="text-xl font-semibold mb-4">Requests</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {requestsReceived.length}{" "}
+          {requestsReceived.length === 1 ? "Request" : "Requests"} Pending
+        </h2>
       ) : (
         <h2 className="text-xl font-semibold mb-4">No Pending Requests</h2>
       )}
@@ -50,6 +72,7 @@ const ConnectionSidebar = () => {
           <div
             key={request._id}
             className="bg-base-100 rounded-lg p-3 mb-3 flex items-start gap-3 cursor-pointer hover:bg-base-300 transition"
+            onClick={() => navigate(`/profile/${request._id}/${request.fromUserId._id}`)}
           >
             <img
               src={request.fromUserId.profilePic}
@@ -64,10 +87,16 @@ const ConnectionSidebar = () => {
                     request.fromUserId.lastName}
                 </h3>
                 <div className="flex gap-2">
-                  <button className="btn btn-xs btn-circle btn-ghost text-error hover:bg-error hover:text-white">
+                  <button
+                    className="btn btn-xs btn-circle btn-ghost text-error hover:bg-error hover:text-white"
+                    onClick={(e) => handleReject(e, request._id)}
+                  >
                     <X size={14} />
                   </button>
-                  <button className="btn btn-xs btn-circle btn-ghost text-success hover:bg-success hover:text-white">
+                  <button
+                    className="btn btn-xs btn-circle btn-ghost text-success hover:bg-success hover:text-white"
+                    onClick={(e) => handleAccept(e, request._id)}
+                  >
                     <Check size={14} />
                   </button>
                 </div>

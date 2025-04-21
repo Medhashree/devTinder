@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Pencil } from "lucide-react";
+import axios from "axios";
+import { BASE_URL } from "../utils/constants";
+import { useDispatch } from "react-redux";
+import { removeFeed } from "../utils/feedSlice";
 
-const UserCard = ({ userData }) => {
-  const { firstName, lastName, age, gender, about, profilePic, skills } =
+const UserCard = ({ userData, setToastInfo}) => {
+  const { _id, firstName, lastName, age, gender, about, profilePic, skills } =
     userData;
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [showModal, setShowModal] = useState(false);
 
@@ -22,6 +27,26 @@ const UserCard = ({ userData }) => {
   const handleCloseModal = () => setShowModal(false);
 
   const visibleSkills = skills.length > 4 ? skills.slice(0, 3) : skills;
+
+  const handleInterest = async() => {
+    try{
+      const res = await axios.post(`${BASE_URL}/request/send/interested/${_id}`, {}, {withCredentials: true});
+      setToastInfo({ type: 'interest', name: firstName })
+      dispatch(removeFeed());
+    }catch(err){
+      console.error(err);
+    }
+  };
+
+  const handleIgnore = async() => {
+    try{
+      const res = await axios.post(`${BASE_URL}/request/send/ignored/${_id}`, {}, {withCredentials: true});
+      setToastInfo({ type: 'ignore', name: firstName })
+      dispatch(removeFeed());
+    }catch(err){
+      console.error(err);
+    }
+  };
 
   return (
     <>
@@ -46,7 +71,7 @@ const UserCard = ({ userData }) => {
 
           {(age || gender) && (
             <p className="text-md text-teal-200">
-              {age && <span>{age}years </span>}
+              {age && <span>{age} years old</span>}
               {gender && <span className="ml-2">{gender}</span>}
             </p>
           )}
@@ -79,10 +104,10 @@ const UserCard = ({ userData }) => {
 
           {location.pathname !== "/profile" && (
             <div className="card-actions flex justify-between pt-4">
-              <button className="btn bg-red-400 text-white hover:bg-red-500">
+              <button className="btn btn-outline btn-error hover:bg-red-400 hover:text-white" onClick={handleIgnore}>
                 Ignore
               </button>
-              <button className="btn bg-purple-700 text-white hover:bg-purple-900">
+              <button className="btn bg-purple-700 text-white hover:bg-purple-900" onClick={handleInterest}>
                 Interested
               </button>
             </div>

@@ -10,7 +10,7 @@ const feedSlice = createSlice({
             state.items.push(...action.payload);
           },
           removeFeed: (state) => {
-            state.items = [];
+            state.items.shift();
           }
     }
 });

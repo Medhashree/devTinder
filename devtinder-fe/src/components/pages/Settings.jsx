@@ -65,7 +65,6 @@ const Settings = () => {
       profilePic: profile.profilePic,
       skills: profile.Skills.split(", "),
     };
-    console.log(updatedData);
     try {
       const res = await axios.patch(BASE_URL + "/profile/edit", updatedData, {
         withCredentials: true,

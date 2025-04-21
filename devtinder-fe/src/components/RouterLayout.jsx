@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import LoginGuard from "./LogInGuard";
 import Settings from "./pages/Settings";
 import Connections from "./pages/Connections";
+import ConnectionProfileView from "./pages/ConnectionProfileView";
+import CreateAccount from "./pages/CreateAccount";
 
 function RouterLayout() {
   const location = useLocation();
@@ -25,6 +27,7 @@ function RouterLayout() {
       >
         <Routes>
           <Route path="/" element={<SignIn />} />
+          <Route path="create-account" element={<CreateAccount />} />
           <Route path="login" element={<Login />} />
           <Route
             path="profile"
@@ -55,6 +58,15 @@ function RouterLayout() {
             element={
               <LoginGuard>
                 <Connections />
+              </LoginGuard>
+            }
+          />
+
+          <Route
+            path="profile/:requestId/:userId"
+            element={
+              <LoginGuard>
+                <ConnectionProfileView />
               </LoginGuard>
             }
           />

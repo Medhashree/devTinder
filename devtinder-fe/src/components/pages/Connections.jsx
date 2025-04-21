@@ -27,7 +27,6 @@ const Connections = () => {
       });
       setConnectionsData(res?.data?.data || []);
       dispatch(addConnections(res?.data?.data));
-      console.log(res?.data?.data);
     } catch (err) {
       console.error(err);
     }

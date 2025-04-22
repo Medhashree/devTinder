@@ -45,21 +45,21 @@ profileRouter.patch("/profile/changePassword", userAuth, async (req, res) => {
 
     const isPasswordValid = await loggedUser.validatePassword(currentPassword);
     if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+      return res.status(400).send({message: "Invalid credentials"});
     }
 
     if(!validator.isStrongPassword(newPassword)){
-        throw new Error("Password is not strong");
+        return res.status(400).send({message: "Password is not strong"});
     }
 
     if (newPassword !== confirmPassword) {
-      throw new Error("New and confirm passwords should match.");
+      return res.status(400).send({message: "New and confirm passwords should match."});
     }
 
     const passwordHash = await bcrypt.hash(confirmPassword, 10);
     loggedUser.password = passwordHash;
     loggedUser.save();
-    res.send("Password successfully updated!");
+    return res.send({message: "Password successfully updated!"});
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
   }

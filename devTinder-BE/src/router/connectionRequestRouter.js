@@ -4,6 +4,16 @@ const connectionRequestRouter = express.Router();
 const ConnectionRequest = require("../model/connectionRequest");
 const User = require("../model/user");
 
+const USER_DATA_TO_BE_SENT = [
+  "firstName",
+  "lastName",
+  "age",
+  "gender",
+  "about",
+  "profilePic",
+  "skills",
+];
+
 //Sending Connection req/ ignoring
 connectionRequestRouter.post(
   "/request/send/:status/:toUserId",
@@ -131,13 +141,45 @@ connectionRequestRouter.get("/request/profile/connections/:userId", userAuth, as
         }
         return row.fromUserId;
       });
-      res.json({ message: "Connections", data });
+      res.json({ message: "Connections", data: data });
     } else {
-      res.send({ message: "No Connections" });
+      res.send({ message: "No Connections", data: [] });
     }
   } catch (err) {
     res.status(400).send({ message: err.message });
   }
 });
+
+//block connections WIP
+// connectionRequestRouter.post(
+//   "/block/rejected/:requestId",
+//   userAuth,
+//   async (req, res) => {
+//     try {
+//         const loggedUser = req.user;
+
+//         const { requestId }  = req.params;
+
+//         const connectionRequest = await ConnectionRequest.findOne({
+//             _id: requestId,
+//             toUserId: loggedUser._id,
+//             status: 'accepted'
+//         });
+
+//         if(!connectionRequest){
+//             throw new Error('Connection request not found');
+//         }
+
+//         connectionRequest.status = 'rejected';
+
+//         await connectionRequest.save();
+
+//         res.json({message: `${loggedUser.firstName} was blocked`, data: connectionRequest});
+
+//     } catch (err) {
+//       res.status(400).send("ERROR: " + err.message);
+//     }
+//   }
+// );
 
 module.exports = connectionRequestRouter;

@@ -9,6 +9,7 @@ import { addConnections } from "../../utils/connectionSlice";
 const ConnectionProfileView = () => {
   const { requestId, userId } = useParams();
   const [userData, setUserData] = useState(null);
+  const [userConnections, setUserConnections] = useState([]);
   const skillColors = [
     "bg-orange-500",
     "bg-indigo-400",
@@ -30,8 +31,19 @@ const ConnectionProfileView = () => {
     }
   };
 
+  const getUserConnections = async () => {
+    try{
+      const res = await axios.get(`${BASE_URL}/request/profile/connections/${userId}`, {withCredentials: true});
+      setUserConnections(res?.data?.data);
+      console.log(res?.data?.data)
+    }catch(err){
+      console.error(err);
+    }
+  }
+
   useEffect(() => {
     getUserData();
+    getUserConnections();
   }, []);
 
   const handleAccept = async () => {
@@ -123,15 +135,16 @@ const ConnectionProfileView = () => {
         {/* Connections Section */}
         <div className="bg-base-100 p-5 rounded-xl shadow-md mt-10">
           <h3 className="text-xl font-bold mb-4">Works most with...</h3>
+            {userConnections.length === 0 && <p>Looks like they’re just getting started — no connections yet.</p>}
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-            {userData.connections?.map((conn) => (
+            {userConnections.length > 0 && userConnections?.map((conn) => (
               <div key={conn._id} className="text-center">
                 <img
-                  src={conn.profileImage}
-                  alt={conn.name}
+                  src={conn.profilePic}
+                  alt={conn.firstName}
                   className="w-16 h-16 object-cover rounded-full mx-auto mb-1"
                 />
-                <p className="text-sm font-medium">{conn.name}</p>
+                <p className="text-sm font-medium">{conn.firstName}</p>
               </div>
             ))}
           </div>

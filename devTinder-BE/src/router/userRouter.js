@@ -7,6 +7,7 @@ const userRouter = express.Router();
 const USER_DATA_TO_BE_SENT = [
   "firstName",
   "lastName",
+  "emailId",
   "age",
   "gender",
   "about",

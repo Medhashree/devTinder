@@ -10,6 +10,7 @@ import Settings from "./pages/Settings";
 import Connections from "./pages/Connections";
 import ConnectionProfileView from "./pages/ConnectionProfileView";
 import CreateAccount from "./pages/CreateAccount";
+import ChangePassword from "./pages/ChangePassword";
 
 function RouterLayout() {
   const location = useLocation();
@@ -67,6 +68,15 @@ function RouterLayout() {
             element={
               <LoginGuard>
                 <ConnectionProfileView />
+              </LoginGuard>
+            }
+          />
+
+          <Route
+            path="change-password"
+            element={
+              <LoginGuard>
+                <ChangePassword />
               </LoginGuard>
             }
           />

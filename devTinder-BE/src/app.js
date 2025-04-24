@@ -11,7 +11,7 @@ const cors = require("cors");
 app.use(express.json()); // this middleware(runs for all URLs), provided by express to read and convert JSON
 app.use(cookies());
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://16.171.234.159/',
   credentials: true //as we are using http
 }))
 

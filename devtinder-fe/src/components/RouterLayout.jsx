@@ -11,6 +11,7 @@ import Connections from "./pages/Connections";
 import ConnectionProfileView from "./pages/ConnectionProfileView";
 import CreateAccount from "./pages/CreateAccount";
 import ChangePassword from "./pages/ChangePassword";
+import ChatWindow from "./ChatWindow";
 
 function RouterLayout() {
   const location = useLocation();
@@ -77,6 +78,15 @@ function RouterLayout() {
             element={
               <LoginGuard>
                 <ChangePassword />
+              </LoginGuard>
+            }
+          />
+
+          <Route
+            path="chat/:targetUserId"
+            element={
+              <LoginGuard>
+                <ChatWindow />
               </LoginGuard>
             }
           />

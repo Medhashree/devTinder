@@ -3,7 +3,8 @@ import { BASE_URL } from "../../utils/constants";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addConnections, removeConnections } from "../../utils/connectionSlice";
-import { Ban, MessageSquareText } from "lucide-react";
+import { Ban, MessageSquareText, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Connections = () => {
   const dispatch = useDispatch();
@@ -75,7 +76,7 @@ const Connections = () => {
     <>
       <div className="mt-20 mb-20">
         {/* Dark overlay WIP */}
-      {/* <div className=" absolute inset-0 bg-black opacity-70 z-0">
+        {/* <div className=" absolute inset-0 bg-black opacity-70 z-0">
         {isShowToast && (
           <div className="toast toast-top toast-end mt-20">
             <div className="alert alert-error">
@@ -125,8 +126,15 @@ const Connections = () => {
                       >
                         <Ban size={20} />
                       </button> */}
+
+                      <Link to={"/chat/" + request._id}>
+                        <button className="btn btn-md btn-circle btn-ghost text-success hover:bg-success hover:text-white">
+                          <MessageSquareText size={20} />
+                        </button>
+                      </Link>
+
                       <button
-                        className="btn btn-md btn-circle btn-ghost text-success hover:bg-success hover:text-white"
+                        className="btn btn-md btn-circle btn-ghost text-error hover:bg-error hover:text-white"
                         onClick={() =>
                           setShowEmailModal({
                             emailId: request.emailId,
@@ -134,7 +142,7 @@ const Connections = () => {
                           })
                         }
                       >
-                        <MessageSquareText size={20} />
+                        <Mail size={20} />
                       </button>
                     </div>
                   </div>
@@ -215,9 +223,8 @@ const Connections = () => {
           open
         >
           <div className="modal-box bg-base-200">
-            <h2 className="font-bold text-lg">Hey!</h2>
             <div className="py-4 flex flex-wrap gap-2 justify-center">
-              My email ID is{" "}
+              Hey! My email ID is{" "}
               <span className="text-blue-500">{showEmailModal.emailId} .</span>
               Please drop me a message there — let's build something together!
             </div>

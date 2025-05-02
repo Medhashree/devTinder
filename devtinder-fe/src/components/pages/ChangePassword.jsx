@@ -30,7 +30,6 @@ const ChangePassword = () => {
         { currentPassword: currentPwd, newPassword: newPwd, confirmPassword: confirmPwd },
         { withCredentials: true }
       );
-      console.log(res);
       setShowSuccessToast(true);
       setToastMsg(res?.data?.message);
       setIsChangePwd(false);

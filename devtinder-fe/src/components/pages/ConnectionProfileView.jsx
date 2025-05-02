@@ -35,7 +35,6 @@ const ConnectionProfileView = () => {
     try{
       const res = await axios.get(`${BASE_URL}/request/profile/connections/${userId}`, {withCredentials: true});
       setUserConnections(res?.data?.data);
-      console.log(res?.data?.data)
     }catch(err){
       console.error(err);
     }

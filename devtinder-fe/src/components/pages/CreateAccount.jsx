@@ -41,11 +41,13 @@ const CreateAccount = () => {
 
       if (!validator.isEmail(emailId)) {
         setIsInvalidEmail(true);
+        setIsSignUp(false);
         return;
       }
 
       if (!validator.isStrongPassword(password)) {
         setIsInvalidPassword(true);
+        setIsSignUp(false);
         return;
       }
 
